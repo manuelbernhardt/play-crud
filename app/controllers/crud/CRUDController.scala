@@ -6,13 +6,15 @@ import scala.runtime.AbstractPartialFunction
 import scala.reflect.ClassTag
 import scalatags.HtmlTag
 import play.api.http.Writeable
-import play.api.data.Form
+import play.api.data._
 import play.api.Logger
+import play.api.data.format.Formatter
+import models.crud.Model
 
 /**
  * @author Manuel Bernhardt <manuel@bernhardt.io>
  */
-abstract class CRUDController[EntityType, IdType](implicit idBindable: PathBindable[IdType], entityTag: ClassTag[EntityType])
+abstract class CRUDController[EntityType <: Model[IdType], IdType](implicit idBindable: PathBindable[IdType], entityTag: ClassTag[EntityType])
     extends Controller with Router.Routes with CRUDControllerDefinition[IdType] { self: CRUDStorage[IdType] =>
 
   // ~~~ routing
@@ -79,6 +81,12 @@ abstract class CRUDController[EntityType, IdType](implicit idBindable: PathBinda
    */
   val form: Form[EntityType]
 
+  implicit def ignored[A](value: A): Mapping[A] = play.api.data.Forms.of(new Formatter[A] {
+    def bind(key: String, data: Map[String, String]) = Right(value)
+    def unbind(key: String, value: A) = Map.empty
+    override val format = Some("ignored" -> Seq.empty)
+  })
+
   // ~~~ view related things
 
   protected val views = new CRUDViews
@@ -94,16 +102,28 @@ abstract class CRUDController[EntityType, IdType](implicit idBindable: PathBinda
 
   // ~~~ default controller actions implementation
 
-  def index: EssentialAction = Action {
-    Ok(views.list("List of " + entityNamePlural, findAll()))(htmlTagToWriteable)
+  def index: EssentialAction = Action { request =>
+    Ok(views.list("List of " + entityNamePlural, findAll(), request.flash, request.uri))(htmlTagToWriteable)
   }
 
-  def newScreen: EssentialAction = Action {
-    val foo = views.newForm("Create new " + entityName, form)
-    Ok(foo)
+  def newScreen: EssentialAction = Action { implicit request =>
+    val actionUri = request.uri.substring(0, request.uri.length - "/new".length)
+    Ok(views.renderForm("Create new " + entityName, form, actionUri))
   }
 
-  def create: EssentialAction = ???
+  def create: EssentialAction = Action { implicit request =>
+    form.bindFromRequest.fold(
+      formWithErrors => {
+        Logger.debug("Oops " + formWithErrors.errors.toString)
+        BadRequest(views.renderForm("Create new", formWithErrors, request.uri))
+      },
+      newEntity => {
+        Logger.debug("Got new entity to persist: " + newEntity)
+        save(newEntity)
+        Redirect(request.uri).flashing("success" -> ("Dude, you just submited " + newEntity.toString))
+      }
+    )
+  }
 
   def show(id: IdType): EssentialAction = ???
 

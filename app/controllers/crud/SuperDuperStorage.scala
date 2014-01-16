@@ -2,23 +2,30 @@ package controllers.crud
 
 import models.User
 import models.crud.Model
+import scala.collection.mutable.ArrayBuffer
+import org.joda.time.DateTime
 
 /**
  * @author Manuel Bernhardt <manuel@bernhardt.io>
  */
 trait SuperDuperStorage[ModelType <: Model[Long]] extends CRUDStorage[Long] {
 
-  private val bob = User(1, "Bob", "Marley", "bob@marley.org")
-  private val jimmy = User(2, "Jimmy", "Hendrix", "jimmy@hendrix.org")
+  private val bob = User(1, "Bob", "Marley", "bob@marley.org", Seq("music"), None, new DateTime(1976, 2, 12, 0, 0))
+  private val jimmy = User(2, "Jimmy", "Hendrix", "jimmy@hendrix.org", Seq("music"), Some("flying"), new DateTime(1965, 4, 3, 0, 0))
 
-  def findAll() = List(bob, jimmy)
+  private val users = new ArrayBuffer[User]()
 
-  def findOne(id: Long): Option[User] = if (id == 1) Some(bob) else if (id == 2) Some(jimmy) else None
+  users += bob
+  users += jimmy
 
-  def save(resource: Model[Long]): Unit = {}
+  def findAll() = users.toList.map(_.asInstanceOf[Model[Long]])
 
-  def update(id: Long, resource: Model[Long]): Unit = {}
+  def findOne(id: Long): Option[ModelType] = users.find(_.id == id).map(_.asInstanceOf[ModelType])
 
-  def delete(id: Long): Unit = {}
+  def save(resource: Model[Long]): Unit = users += resource.asInstanceOf[User].copy(id = users.size + 1)
+
+  def update(id: Long, resource: Model[Long]): Unit = ???
+
+  def delete(id: Long): Unit = users.filterNot(_.id == id)
 
 }
