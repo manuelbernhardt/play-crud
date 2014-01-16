@@ -50,7 +50,7 @@ abstract class CRUDController[EntityType <: Model[IdType], IdType](implicit idBi
           case ("POST", MaybeSlash()) => create
           case ("GET", Id(id)) => withId(id, show)
           case ("GET", Edit(id)) => withId(id, edit)
-          case ("PUT", Id(id)) => withId(id, update)
+          case ("POST", Id(id)) => withId(id, update)
           case ("DELETE", Id(id)) => withId(id, destroy)
           case _ => default(rh)
         }
@@ -63,7 +63,7 @@ abstract class CRUDController[EntityType <: Model[IdType], IdType](implicit idBi
       if (rh.path.startsWith(path)) {
         (rh.method, rh.path.drop(path.length)) match {
           case ("GET", MaybeSlash() | NewScreen() | Id(_) | Edit(_)) => true
-          case ("PUT", Id(_)) => true
+          case ("POST", Id(_)) => true
           case ("POST", MaybeSlash()) => true
           case ("DELETE", Id(_)) => true
           case _ => false
@@ -120,16 +120,40 @@ abstract class CRUDController[EntityType <: Model[IdType], IdType](implicit idBi
       newEntity => {
         Logger.debug("Got new entity to persist: " + newEntity)
         save(newEntity)
-        Redirect(request.uri).flashing("success" -> ("Dude, you just submited " + newEntity.toString))
+        Redirect(request.uri).flashing("success" -> ("Dude, you just submited " + newEntity.title))
       }
     )
   }
 
   def show(id: IdType): EssentialAction = ???
 
-  def edit(id: IdType): EssentialAction = ???
+  def edit(id: IdType): EssentialAction = Action { implicit request =>
+    findOne(id).map { value =>
+      val actionUri = request.uri.substring(0, request.uri.length - "/edit".length)
+      val filledForm = form.fill(value.asInstanceOf[EntityType])
+      Ok(views.renderForm("Update " + entityName, filledForm, actionUri))
+    } getOrElse {
+      NotFound(s"Could not find $entityName with ID $id")
+    }
+  }
 
-  def update(id: IdType): EssentialAction = ???
+  def update(id: IdType): EssentialAction = Action { implicit request =>
+    val baseUri = request.uri.substring(0, request.uri.length - s"/$id".length)
+    form.bindFromRequest.fold(
+      formWithErrors =>
+        BadRequest(views.renderForm("Update", formWithErrors, request.uri)),
+      updatedEntity => {
+        Logger.debug(updatedEntity.toString)
+        findOne(id).map { value =>
+          update(id, updatedEntity)
+          Redirect(baseUri).flashing("success" -> ("Dude, you just updated " + updatedEntity.title))
+        } getOrElse {
+          NotFound(s"Could not find $entityName with ID $id")
+        }
+      }
+
+    )
+  }
 
   def destroy(id: IdType): EssentialAction = ???
 }

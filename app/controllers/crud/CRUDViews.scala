@@ -36,7 +36,7 @@ class CRUDViews {
             tr(
               td(e.title),
               td(
-                a("Edit").href("#"),
+                a("Edit").href(uri + "/" + e.id + "/edit"),
                 a("Delete").href("#")
               )
             )
@@ -49,14 +49,14 @@ class CRUDViews {
     )
   )
 
-  def renderForm[IdType, T](t: String, f: Form[T], submitUrl: String)(implicit ct: ClassTag[T]) = {
+  def renderForm[IdType, T](t: String, f: Form[T], submitUrl: String, method: String = "POST")(implicit ct: ClassTag[T]) = {
 
     main(t)(
       h1(t),
       form(
         renderFormFields(f).toString(),
         input.attr("type" -> "submit")
-      ).attr("method" -> "POST", "action" -> submitUrl)
+      ).attr("method" -> method, "action" -> submitUrl)
     )
   }
 
@@ -76,7 +76,6 @@ class CRUDViews {
       case fm @ FieldMapping(key, constraints) =>
 
         Logger.debug(s"Handling FieldMapping with key $key and type ${fm.getClass}")
-        println(constraints.toString)
 
         val ignored = fm.format.exists(_._1 == "ignored")
 

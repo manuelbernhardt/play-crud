@@ -24,7 +24,11 @@ trait SuperDuperStorage[ModelType <: Model[Long]] extends CRUDStorage[Long] {
 
   def save(resource: Model[Long]): Unit = users += resource.asInstanceOf[User].copy(id = users.size + 1)
 
-  def update(id: Long, resource: Model[Long]): Unit = ???
+  def update(id: Long, resource: Model[Long]): Unit = {
+    val idx = users.indexWhere(_.id == id)
+    users.remove(idx)
+    users += resource.asInstanceOf[User].copy(id = id)
+  }
 
   def delete(id: Long): Unit = users.filterNot(_.id == id)
 
