@@ -34,7 +34,7 @@ class CRUDViews {
         tbody(
           entities.map { e =>
             tr(
-              td(e.title),
+              td(e.toString()),
               td(
                 a("Edit").href(uri + "/" + e.id + "/edit"),
                 a("Delete").href("#")
@@ -97,8 +97,12 @@ class CRUDViews {
 
       case RepeatedMapping(wrapped, key, constraints) =>
         // TODO configurable repetition
-        Logger.debug("repeated")
-        Seq(Html(key)) ++ (1 to 3).flatMap(_ => mappingToHtml(Seq(wrapped)))
+        Logger.debug("repeated " + key)
+        val howMany = {
+          val n = f.data.count(_._1.startsWith(key))
+          if (n == 0) 3 else n + 1
+        }
+        Seq(Html(key)) ++ (0 to howMany).flatMap(i => mappingToHtml(Seq(wrapped.withPrefix(key + s"[$i]"))))
 
       case WrappedMapping(wrapped, f1, f2, additionalConstraints) =>
         Logger.debug("wrapped")
