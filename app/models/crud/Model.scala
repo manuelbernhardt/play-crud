@@ -7,6 +7,6 @@ trait Model[IdType] {
 
   def id: IdType
 
-  def title: String = s"${getClass.getSimpleName}[$id]"
+  override def toString(): String = s"${getClass.getSimpleName}[$id]"
 
 }

@@ -120,7 +120,7 @@ abstract class CRUDController[EntityType <: Model[IdType], IdType](implicit idBi
       newEntity => {
         Logger.debug("Got new entity to persist: " + newEntity)
         save(newEntity)
-        Redirect(request.uri).flashing("success" -> ("Dude, you just submited " + newEntity.title))
+        Redirect(request.uri).flashing("success" -> ("Dude, you just submitted " + newEntity.toString()))
       }
     )
   }
@@ -143,10 +143,11 @@ abstract class CRUDController[EntityType <: Model[IdType], IdType](implicit idBi
       formWithErrors =>
         BadRequest(views.renderForm("Update", formWithErrors, request.uri)),
       updatedEntity => {
-        Logger.debug(updatedEntity.toString)
+        Logger.debug(request.body.toString)
+        Logger.debug(updatedEntity.toString())
         findOne(id).map { value =>
           update(id, updatedEntity)
-          Redirect(baseUri).flashing("success" -> ("Dude, you just updated " + updatedEntity.title))
+          Redirect(baseUri).flashing("success" -> ("Dude, you just updated " + updatedEntity.toString()))
         } getOrElse {
           NotFound(s"Could not find $entityName with ID $id")
         }

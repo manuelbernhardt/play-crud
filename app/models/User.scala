@@ -15,6 +15,6 @@ case class User(
     superPower: Option[String],
     birthDate: DateTime) extends Model[Long] {
 
-  override def title: String = s"$firstName $lastName"
+  override def toString = s"$firstName $lastName"
 
 }
