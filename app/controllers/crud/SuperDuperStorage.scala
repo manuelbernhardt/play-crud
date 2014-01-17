@@ -6,6 +6,8 @@ import scala.collection.mutable.ArrayBuffer
 import org.joda.time.DateTime
 
 /**
+ * Demo storage, for users only
+ *
  * @author Manuel Bernhardt <manuel@bernhardt.io>
  */
 trait SuperDuperStorage[ModelType <: Model[Long]] extends CRUDStorage[Long] {
