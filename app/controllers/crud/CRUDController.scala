@@ -4,8 +4,6 @@ import play.api.mvc._
 import play.core.Router
 import scala.runtime.AbstractPartialFunction
 import scala.reflect.ClassTag
-import scalatags.HtmlTag
-import play.api.http.Writeable
 import play.api.data._
 import play.api.Logger
 import play.api.data.format.Formatter
@@ -95,15 +93,10 @@ abstract class CRUDController[EntityType <: Model[IdType], IdType](implicit idBi
 
   val entityNamePlural = entityTag.runtimeClass.getSimpleName + "s"
 
-  implicit def htmlTagToWriteable: Writeable[HtmlTag] = Writeable[HtmlTag](
-    transform = { tag: HtmlTag => tag.toString().getBytes("utf-8") },
-    contentType = Some(HTML)
-  )
-
   // ~~~ default controller actions implementation
 
   def index: EssentialAction = Action { request =>
-    Ok(views.list("List of " + entityNamePlural, findAll(), request.flash, request.uri))(htmlTagToWriteable)
+    Ok(views.list("List of " + entityNamePlural, findAll(), request.uri)(request.flash))
   }
 
   def newScreen: EssentialAction = Action { implicit request =>

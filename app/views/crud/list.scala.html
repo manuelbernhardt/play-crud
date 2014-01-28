@@ -1,0 +1,33 @@
+@(title: String, entities: List[models.crud.Model[_]], baseUrl: String)(implicit flash: Flash)
+
+@views.html.crud.main(title) {
+
+    <h1>@title</h1>
+
+    @flash.get("success").map { s =>
+      <div>@s</div>
+    }
+
+    <div>
+        <table>
+            <thead>
+                <th>Title</th>
+                <th>Actions</th>
+            </thead>
+            <tbody>
+                @entities.map { e =>
+                    <tr>
+                        <td>@e.toString</td>
+                        <td>
+                            <a href="@baseUrl/@e.id/edit">Edit</a>
+                            <a href="#">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div>
+        <a href="@baseUrl/new">New</a>
+    </div>
+}

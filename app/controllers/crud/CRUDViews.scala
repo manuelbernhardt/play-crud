@@ -1,13 +1,11 @@
 package controllers.crud
 
-import scalatags._
 import models.crud.Model
 import play.api.data._
 import scala.reflect._
 import play.api.templates.Html
 import play.api.Logger
 import org.joda.time.{ LocalDateTime, DateTime }
-import play.api.data.format.Formatter
 import play.api.mvc.Flash
 
 /**
@@ -15,49 +13,11 @@ import play.api.mvc.Flash
  */
 class CRUDViews {
 
-  def main(t: String)(b: STag*) = html(
-    head(
-      title(t),
-      body(b)
-    )
-  )
-
-  def list[IdType](t: String, entities: List[Model[IdType]], flash: Flash, uri: String) = main(t)(
-    h1(t),
-    flash.get("success").map { s => div(s) } getOrElse div(),
-    div(
-      table(
-        thead(
-          th("Title"),
-          th("Actions")
-        ),
-        tbody(
-          entities.map { e =>
-            tr(
-              td(e.toString()),
-              td(
-                a("Edit").href(uri + "/" + e.id + "/edit"),
-                a("Delete").href("#")
-              )
-            )
-          }
-        )
-      )
-    ),
-    div(
-      a("New").href(uri + "/new")
-    )
-  )
+  def list[IdType](t: String, entities: List[Model[IdType]], baseUrl: String)(implicit flash: Flash) =
+    views.html.crud.list(t, entities, baseUrl)
 
   def renderForm[IdType, T](t: String, f: Form[T], submitUrl: String, method: String = "POST")(implicit ct: ClassTag[T]) = {
-
-    main(t)(
-      h1(t),
-      form(
-        renderFormFields(f).toString(),
-        input.attr("type" -> "submit")
-      ).attr("method" -> method, "action" -> submitUrl)
-    )
+    views.html.crud.update(t, renderFormFields(f), submitUrl, method)
   }
 
   def renderFormFields[T](f: Form[T])(implicit ct: ClassTag[T]): Html = {
@@ -111,7 +71,7 @@ class CRUDViews {
       case o =>
         Logger.debug("other type?" + o.toString)
         val innerMappings = o.mappings
-        Logger.debug("inner mapppings -> " + innerMappings.toString)
+        Logger.debug("inner mappings -> " + innerMappings.toString)
         mappingToHtml(innerMappings)
 
     }
@@ -156,7 +116,6 @@ class CRUDViews {
       }
     }
 
-    val toRender = f.mapping.mappings.filterNot(_.isInstanceOf[ObjectMapping])
     val renderedFields: Seq[Html] = mappingToHtml(fields)
 
     renderedFields.foldLeft(Html.empty) { _ += _ }

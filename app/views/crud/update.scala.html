@@ -1,0 +1,9 @@
+@(title: String,fields: Html, submitUrl: String, method: String)
+
+@main(title) {
+    <h1>@title</h1>
+    <form method="@method" action="@submitUrl">
+        @fields
+        <input type="submit" value="Submit">
+    </form>
+}
