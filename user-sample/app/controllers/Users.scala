@@ -1,6 +1,6 @@
 package controllers
 
-import controllers.crud.{ SuperDuperStorage, CRUDController }
+import controllers.crud.{ CRUDController }
 import models.User
 import play.api.data._
 import play.api.data.Forms._

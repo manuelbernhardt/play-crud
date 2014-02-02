@@ -1,4 +1,4 @@
-package controllers.crud
+package controllers
 
 import models.User
 import models.crud.Model
@@ -10,7 +10,7 @@ import org.joda.time.DateTime
  *
  * @author Manuel Bernhardt <manuel@bernhardt.io>
  */
-trait SuperDuperStorage[ModelType <: Model[Long]] extends CRUDStorage[Long] {
+trait SuperDuperStorage[ModelType <: Model[Long]] extends crud.CRUDStorage[Long] {
 
   private val bob = User(1, "Bob", "Marley", "bob@marley.org", Seq("music"), None, new DateTime(1976, 2, 12, 0, 0))
   private val jimmy = User(2, "Jimmy", "Hendrix", "jimmy@hendrix.org", Seq("music"), Some("flying"), new DateTime(1965, 4, 3, 0, 0))

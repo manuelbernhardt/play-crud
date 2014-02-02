@@ -1,14 +1,19 @@
-name := "play-crud"
+val sharedSettings = Seq(
+  organization := "io.manuelbernhardt",
+  version := "1.0-SNAPSHOT"
+) ++ scalariformSettings ++ play.Project.playScalaSettings
 
-version := "1.0-SNAPSHOT"
+lazy val crud = project.
+  settings(sharedSettings :_*).
+  settings(
+    libraryDependencies += "com.typesafe.play" %% "play" % "2.2.1",
+    resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/"
+  )
 
-libraryDependencies ++= Seq(
-)
+lazy val `user-sample` = project.
+  settings(sharedSettings :_*).
+  dependsOn(crud)
 
-play.Project.playScalaSettings
-
-scalariformSettings
-
-com.jamesward.play.BrowserNotifierPlugin.livereload
-
-val root = project.in(file("."))
+val root = project.in(file(".")).
+  settings(sharedSettings :_*).
+  aggregate(crud, `user-sample`)
